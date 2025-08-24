@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sports Picker Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .filters {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .filter-group {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .filter-item {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .filter-item label {
+            font-weight: 600;
+            color: #555;
+        }
+        
+        .filter-item select {
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            min-width: 150px;
+        }
+        
+        .filter-item select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            gap: 20px;
+        }
+        
+        .game-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+        
+        .game-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+        
+        .game-header {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        
+        .game-teams {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .team {
+            text-align: center;
+            flex: 1;
+        }
+        
+        .team-name {
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+        
+        .team-record {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .vs {
+            font-size: 20px;
+            font-weight: bold;
+            color: #667eea;
+            margin: 0 15px;
+        }
+        
+        .game-info {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+        
+        .pick-stats {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+        
+        .pick-stat {
+            text-align: center;
+        }
+        
+        .pick-stat-value {
+            font-weight: bold;
+            font-size: 18px;
+            color: #667eea;
+        }
+        
+        .pick-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .pick-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+        
+        .pick-btn.home {
+            background: #28a745;
+            color: white;
+        }
+        
+        .pick-btn.away {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .pick-btn.tie {
+            background: #ffc107;
+            color: black;
+        }
+        
+        .pick-btn:hover {
+            opacity: 0.8;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .action-btn {
+            flex: 1;
+            padding: 8px 15px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        
+        .action-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 15% auto;
+            padding: 20px;
+            border-radius: 10px;
+            width: 80%;
+            max-width: 600px;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+        
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .close:hover {
+            color: black;
+        }
+        
+        .history-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .chatbot {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 300px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            display: none;
+        }
+        
+        .chatbot-header {
+            background: #667eea;
+            color: white;
+            padding: 15px;
+            border-radius: 10px 10px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .chatbot-body {
+            padding: 15px;
+            height: 200px;
+            overflow-y: auto;
+        }
+        
+        .chatbot-input {
+            display: flex;
+            gap: 10px;
+            padding: 15px;
+            border-top: 1px solid #eee;
+        }
+        
+        .chatbot-input input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        
+        .chatbot-input button {
+            padding: 8px 15px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        .chat-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }
+        
+        .no-games {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🏆 Sports Picker Dashboard</h1>
+        <p>Select your sport, choose your teams, and make your picks!</p>
+    </div>
+    
+    <div class="container">
+        <div class="filters">
+            <form method="GET" class="filter-group">
+                <div class="filter-item">
+                    <label for="sport">Sport:</label>
+                    <select name="sport" id="sport" onchange="this.form.submit()">
+                        <option value="">Select a sport</option>
+                        {% for sport in sports %}
+                            <option value="{{ sport.id }}" 
+                                {% if sport.id|stringformat:"i" == selected_sport_id %}selected{% endif %}>
+                                {{ sport.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                {% if teams %}
+                <div class="filter-item">
+                    <label for="team">Team (Optional):</label>
+                    <select name="team" id="team" onchange="this.form.submit()">
+                        <option value="">All teams</option>
+                        {% for team in teams %}
+                            <option value="{{ team.id }}" 
+                                {% if team.id|stringformat:"i" == selected_team_id %}selected{% endif %}>
+                                {{ team }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% endif %}
+                
+                <div class="filter-item">
+                    <label for="period">View:</label>
+                    <select name="period" id="period" onchange="this.form.submit()">
+                        <option value="day" {% if view_period == 'day' %}selected{% endif %}>Today</option>
+                        <option value="week" {% if view_period == 'week' %}selected{% endif %}>This Week</option>
+                        <option value="month" {% if view_period == 'month' %}selected{% endif %}>This Month</option>
+                    </select>
+                </div>
+                
+                <!-- Preserve other filter values -->
+                {% if selected_sport_id %}
+                    <input type="hidden" name="sport" value="{{ selected_sport_id }}">
+                {% endif %}
+                {% if selected_team_id %}
+                    <input type="hidden" name="team" value="{{ selected_team_id }}">
+                {% endif %}
+            </form>
+        </div>
+        
+        {% if games %}
+            <div class="games-grid">
+                {% for game in games %}
+                <div class="game-card">
+                    <div class="game-header">
+                        <div style="font-size: 14px; color: #666;">
+                            {{ game.game_date|date:"M d, Y" }} at {{ game.game_date|time:"g:i A" }}
+                        </div>
+                        <div style="font-size: 12px; color: #888;">
+                            📍 {{ game.location }}
+                        </div>
+                    </div>
+                    
+                    <div class="game-teams">
+                        <div class="team">
+                            <div class="team-name">{{ game.away_team }}</div>
+                            <div class="team-record">{{ game.away_team.record }}</div>
+                        </div>
+                        <div class="vs">@</div>
+                        <div class="team">
+                            <div class="team-name">{{ game.home_team }}</div>
+                            <div class="team-record">{{ game.home_team.record }}</div>
+                        </div>
+                    </div>
+                    
+                    {% if game.is_completed %}
+                        <div class="game-info">
+                            <strong>Final Score:</strong> {{ game.away_team }} {{ game.away_score }} - {{ game.home_score }} {{ game.home_team }}
+                        </div>
+                    {% endif %}
+                    
+                    <div class="pick-stats">
+                        <div class="pick-stat">
+                            <div class="pick-stat-value">{{ game.total_picks }}</div>
+                            <div>Total Picks</div>
+                        </div>
+                        <div class="pick-stat">
+                            <div class="pick-stat-value">{{ game.home_picks }}</div>
+                            <div>Home Wins</div>
+                        </div>
+                        <div class="pick-stat">
+                            <div class="pick-stat-value">{{ game.away_picks }}</div>
+                            <div>Away Wins</div>
+                        </div>
+                        <div class="pick-stat">
+                            <div class="pick-stat-value">{{ game.tie_picks }}</div>
+                            <div>Ties</div>
+                        </div>
+                    </div>
+                    
+                    {% if not game.is_completed and user.is_authenticated %}
+                        <div class="pick-buttons">
+                            <button class="pick-btn away" onclick="makePick({{ game.id }}, 'AWAY')">
+                                {{ game.away_team.name }} Wins
+                            </button>
+                            <button class="pick-btn home" onclick="makePick({{ game.id }}, 'HOME')">
+                                {{ game.home_team.name }} Wins
+                            </button>
+                            <button class="pick-btn tie" onclick="makePick({{ game.id }}, 'TIE')">
+                                Tie
+                            </button>
+                        </div>
+                    {% endif %}
+                    
+                    <div class="action-buttons">
+                        <button class="action-btn" onclick="showGameHistory({{ game.id }})">
+                            📊 Game History
+                        </button>
+                        <button class="action-btn" onclick="openChatbot({{ game.home_team.id }}, '{{ game.home_team.name }}')">
+                            🤖 Ask about {{ game.home_team.name }}
+                        </button>
+                        <button class="action-btn" onclick="openChatbot({{ game.away_team.id }}, '{{ game.away_team.name }}')">
+                            🤖 Ask about {{ game.away_team.name }}
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="no-games">
+                <h2>No games found</h2>
+                <p>
+                    {% if not selected_sport_id %}
+                        Please select a sport to view games.
+                    {% else %}
+                        No games scheduled for the selected filters.
+                    {% endif %}
+                </p>
+            </div>
+        {% endif %}
+    </div>
+    
+    <!-- Game History Modal -->
+    <div id="historyModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('historyModal')">&times;</span>
+            <h2>Game History</h2>
+            <div id="historyContent">Loading...</div>
+        </div>
+    </div>
+    
+    <!-- Chatbot -->
+    <div id="chatbot" class="chatbot">
+        <div class="chatbot-header">
+            <span>🤖 Team Assistant</span>
+            <span class="close" onclick="closeChatbot()">&times;</span>
+        </div>
+        <div class="chatbot-body" id="chatbot-messages">
+            <div style="text-align: center; color: #666; padding: 20px;">
+                Ask me about team records, recent games, or any questions!
+            </div>
+        </div>
+        <div class="chatbot-input">
+            <input type="text" id="chatbot-input" placeholder="Ask a question..." 
+                   onkeypress="if(event.key==='Enter') sendChatMessage()">
+            <button onclick="sendChatMessage()">Send</button>
+        </div>
+    </div>
+    
+    <button class="chat-toggle" id="chat-toggle" onclick="toggleChatbot()">💬</button>
+    
+    <script>
+        let currentTeamId = null;
+        let currentTeamName = null;
+        
+        function makePick(gameId, pick) {
+            {% if user.is_authenticated %}
+                fetch(`/game/${gameId}/pick/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: `pick=${pick}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Pick saved successfully!');
+                        location.reload(); // Refresh to show updated stats
+                    } else {
+                        alert('Error saving pick: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while saving your pick.');
+                });
+            {% else %}
+                alert('Please log in to make picks.');
+            {% endif %}
+        }
+        
+        function showGameHistory(gameId) {
+            document.getElementById('historyModal').style.display = 'block';
+            document.getElementById('historyContent').innerHTML = 'Loading...';
+            
+            fetch(`/game/${gameId}/history/`)
+                .then(response => response.json())
+                .then(data => {
+                    let content = '';
+                    if (data.history.length === 0) {
+                        content = '<p>No previous games found between these teams.</p>';
+                    } else {
+                        content = '<div>';
+                        data.history.forEach(game => {
+                            content += `
+                                <div class="history-item">
+                                    <div>
+                                        <strong>${game.date}</strong><br>
+                                        ${game.away_team} ${game.away_score} - ${game.home_score} ${game.home_team}
+                                    </div>
+                                    <div style="font-weight: bold; color: #667eea;">
+                                        Winner: ${game.winner}
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        content += '</div>';
+                    }
+                    document.getElementById('historyContent').innerHTML = content;
+                })
+                .catch(error => {
+                    document.getElementById('historyContent').innerHTML = 'Error loading game history.';
+                });
+        }
+        
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+        
+        function openChatbot(teamId, teamName) {
+            currentTeamId = teamId;
+            currentTeamName = teamName;
+            document.getElementById('chatbot').style.display = 'block';
+            document.getElementById('chat-toggle').style.display = 'none';
+            
+            // Add welcome message
+            const messagesDiv = document.getElementById('chatbot-messages');
+            messagesDiv.innerHTML = `
+                <div style="background: #f0f0f0; padding: 10px; border-radius: 5px; margin-bottom: 10px;">
+                    <strong>🤖 Assistant:</strong> Hi! I'm here to help you with information about ${teamName}. 
+                    Ask me about their record, recent games, or any other questions!
+                </div>
+            `;
+        }
+        
+        function closeChatbot() {
+            document.getElementById('chatbot').style.display = 'none';
+            document.getElementById('chat-toggle').style.display = 'block';
+        }
+        
+        function toggleChatbot() {
+            const chatbot = document.getElementById('chatbot');
+            if (chatbot.style.display === 'block') {
+                closeChatbot();
+            } else {
+                // Open general chatbot
+                currentTeamId = null;
+                currentTeamName = null;
+                document.getElementById('chatbot').style.display = 'block';
+                document.getElementById('chat-toggle').style.display = 'none';
+                
+                const messagesDiv = document.getElementById('chatbot-messages');
+                messagesDiv.innerHTML = `
+                    <div style="background: #f0f0f0; padding: 10px; border-radius: 5px; margin-bottom: 10px;">
+                        <strong>🤖 Assistant:</strong> Hi! I'm your sports assistant. 
+                        Ask me about any team or general sports questions!
+                    </div>
+                `;
+            }
+        }
+        
+        function sendChatMessage() {
+            const input = document.getElementById('chatbot-input');
+            const question = input.value.trim();
+            
+            if (!question) return;
+            
+            const messagesDiv = document.getElementById('chatbot-messages');
+            
+            // Add user message
+            messagesDiv.innerHTML += `
+                <div style="text-align: right; margin-bottom: 10px;">
+                    <div style="background: #667eea; color: white; padding: 10px; border-radius: 5px; display: inline-block; max-width: 80%;">
+                        <strong>You:</strong> ${question}
+                    </div>
+                </div>
+            `;
+            
+            input.value = '';
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            
+            // Send to chatbot API
+            let url = '/chatbot/?question=' + encodeURIComponent(question);
+            if (currentTeamId) {
+                url += '&team_id=' + currentTeamId;
+            }
+            
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    messagesDiv.innerHTML += `
+                        <div style="margin-bottom: 10px;">
+                            <div style="background: #f0f0f0; padding: 10px; border-radius: 5px; display: inline-block; max-width: 80%;">
+                                <strong>🤖 Assistant:</strong> ${data.response}
+                            </div>
+                        </div>
+                    `;
+                    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                })
+                .catch(error => {
+                    messagesDiv.innerHTML += `
+                        <div style="margin-bottom: 10px;">
+                            <div style="background: #ffebee; color: #c62828; padding: 10px; border-radius: 5px; display: inline-block; max-width: 80%;">
+                                <strong>Error:</strong> Sorry, I couldn't process your request.
+                            </div>
+                        </div>
+                    `;
+                    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                });
+        }
+        
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        
+        // Close modals when clicking outside
+        window.onclick = function(event) {
+            const modals = document.getElementsByClassName('modal');
+            for (let modal of modals) {
+                if (event.target == modal) {
+                    modal.style.display = 'none';
+                }
+            }
+        }
+    </script>
+</body>
+</html>
